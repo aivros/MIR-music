@@ -39,7 +39,6 @@ gate_send = 0
 low_frequency_send = []
 silence = False
 correction_time = 0
-
 data_list = [] #list()
 data = ''
 data_time = 0
@@ -53,19 +52,14 @@ def getParity(n):
         parity = ~parity
         n = n & (n - 1)
     return parity
-
 #------------------------------------------------------------------------------
 #返回当前时间
 def current_milli_time():
     current_milli_time = int(round(time.time() * 1000))
     return current_milli_time
-
 #-------------------------------------------------------------------------------------
-
-
 #滤波器
-#@jit#(nopython=True) # Set "nopython" mode for best performance
-    
+#@jit#(nopython=True) # Set "nopython" mode for best performance   
 def low_pass(data,sample_rate):     
     # 设计滤波器
     #sample_rate = 100.0
@@ -84,13 +78,11 @@ def low_pass(data,sample_rate):
     return filtered_x
 
 def low_filter(y,sr):
-
     def butter_lowpass(cutoff, fs, order=5):
         nyq = 0.5 * fs
         normal_cutoff = cutoff / nyq
         b, a = butter(order, normal_cutoff, btype='low', analog=False)
         return b, a
-
     def butter_lowpass_filter(data, cutoff, fs, order=5):
         b, a = butter_lowpass(cutoff, fs, order=order)
         y = lfilter(b, a, data)
@@ -107,18 +99,15 @@ def low_filter(y,sr):
     return low_frequency_data
 
 def high_filter(y,sr):
-
     def butter_highpass(cutoff, fs, order=5):
         nyq = 0.5 * fs
         normal_cutoff = cutoff / nyq
         b, a = butter(order, normal_cutoff, btype='high', analog=False)
         return b, a
-
     def butter_highpass_filter(data, cutoff, fs, order=5):
         b, a = butter_highpass(cutoff, fs, order=order)
         y = lfilter(b, a, data)
         return y
-
     # Filter requirements.
     order = 1
     fs = sr  # sample rate, Hz
@@ -142,7 +131,6 @@ def highpass_filter(y, sr):
     # Apply high-pass filter
     filtered_audio = scipy.signal.filtfilt(filter_coefs, [1], y)
     return filtered_audio
-
 #------------------------------------------------------------------------------------
 #峰值检测
 def peak_track(x,sr):
@@ -173,7 +161,6 @@ def tempo_track(x,sr):
     seconds_per_beat = 60.0 / tempo[0]
     beat_times = numpy.arange(0, T, seconds_per_beat)
     return beat_times
-
 #-----------------------------------------------------------------------------------
 #鼓转录
 def drum_track(x,r):
@@ -196,7 +183,6 @@ def drum_track(x,r):
 #-----------------------------------------------------------------------------------
 #联合高频热力谱，光谱识别
 #-----------------------------------------------------------------------------------
-
 def point_index_get(y,sr,time_zero):
     time_zero = time_zero - int(CHUNK/44.1)
     #print(f'time_zero: {time_zero}')
@@ -212,7 +198,6 @@ def point_index_get(y,sr,time_zero):
     beats = beats + time_zero
     #print(f'time: {time_zero},coreenttime: {int(round(time.time() * 1000))}, beats: {beats}')
     return beats
-
 #------------------------------------------------------------------------------------
 #F幅值过滤
 def amplitude_filter(filtered,gate):    
@@ -236,7 +221,6 @@ def pre_amplitude_filter(filtered, gate):
     else:
         xxx = 0
     return xxx
-
 #----------------------------------------------------------------------------------------------------
 def difference_func(data):
     comparison_list = []
@@ -623,75 +607,6 @@ class pre_read_music_data(object):
                 startime = last_index_
                 #print(distance, startime)
                 #print(f'crrenttime: {int(round(time.time() * 1000))}')
-            '''
-            comparison_list = difference_func(self.time_box) #一阶差分
-            print(comparison_list)
-
-            comparison_diff = difference_func(comparison_list) #二阶差分
-            # print(comparison_diff)
-
-            comparison_diff = np.array(comparison_diff)
-            print(comparison_diff)
-
-            comparison_diff[abs(comparison_diff) == 0] = 1001
-
-            comparison_diff[abs(comparison_diff) < 50] = 0
-            print(comparison_diff)
-
-            x_nonzero = comparison_diff.nonzero()  # 取出矩阵中的非零元素的坐标
-            # print(x_nonzero)
-            print(comparison_diff[x_nonzero])
-            x_nonzero_ = len(comparison_diff[x_nonzero])
-
-            comparison_list_num = np.array(comparison_list)
-            x_zero = np.where(comparison_diff == 0)
-            # print(x_zero)
-            x_zero_ = comparison_list_num[x_zero]
-            print(x_zero_)
-
-            if x_nonzero_ < 15:
-                print('uuu')
-
-                distance_, distance_len, last_index_ = distance_func(x_zero, comparison_list_num)
-
-                if x_nonzero_ < 3:
-                    distance = int(np.mean(np.array(x_zero_)))
-
-                    startime = start_time(self.time_box, last_index_, distance)
-                    print('kkk')
-
-                    self.prediction = True
-
-
-                elif distance_len > 4:
-
-                    self.prediction = True
-
-                    distance = distance_
-
-                    startime = start_time(self.time_box, last_index_, distance)
-
-                else:
-                    print('mmm')
-
-                    # distance,distance_len = distance_func(x_zero,comparison_list_num)
-                    # print('distance: ',distance_)
-
-                    if distance_:
-
-                        multiple_list = multiple_func(x_nonzero, distance_, comparison_list_num)
-                    else:
-                        multiple_list = []
-
-                    print(multiple_list)
-
-                    if len(multiple_list) > 10:
-                        self.prediction = True
-
-                        distance = distance_
-
-                        startime = start_time(self.time_box, last_index_, distance)'''
-            #print(f'crrenttime: {int(round(time.time() * 1000))}')
             if self.prediction:
                 print('666')
                 self.starting_point.append(int(startime))
@@ -705,10 +620,8 @@ class pre_read_music_data(object):
                 gate_send = gate_
                 low_frequency_send = self.low_frequency_
                 correction_time = self.audio_chunk_time[-1]
-
                 gate_high = max(abs(high_frequency_))
                 mean_high = np.mean(abs(high_frequency_))
-
                 gate_low = max(abs(self.low_frequency_))
                 mean_low = np.mean(abs(self.low_frequency_))
             else:
@@ -742,7 +655,6 @@ class Low_Hight_Thread(threading.Thread):
                     low_hight = False
             thread_condition.release()
             #print(f'eee: {int(round(time.time() * 1000))}')
-
 class AudioRecordThread(threading.Thread,pre_read_music_data):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -795,66 +707,6 @@ class AudioRecordThread(threading.Thread,pre_read_music_data):
         stream.stop_stream()
         stream.close()
         p.terminate()
-'''
-class AudioProcessThread(threading.Thread,pre_read_music_data):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        pre_read_music_data.__init__(self)
-    def run(self):
-        global data_time, data, audio, audio_chunk_time
-
-        audio = np.zeros(int(((self.b * self.r) * 10)))
-        audio_chunk_time = [0] * len(audio)
-
-        while True:
-            thread_condition.acquire()
-            #print(f'sss: {int(round(time.time() * 1000))}')
-            time_data = [data_time] * self.block_length
-
-            #print(len(audio_chunk_time))
-            del audio_chunk_time[0:self.block_length]
-
-            audio_chunk_time.extend(time_data)
-            #print(len(audio_chunk_time))
-
-            #del self.time_list[0]
-
-            #self.time_list.append(time_data)
-            if data:
-
-                str_data = data
-                print(f'str_data: {len(str_data)}')
-
-                wave_data = np.frombuffer(str_data,
-                                          dtype=np.int16)
-
-                #print(f'wave_data: {len(wave_data)}')
-                block_size = 88
-                wave_data = chunk_block(wave_data,block_size)
-                wave_data = list(wave_data)
-
-                audio = list(audio)
-
-                #print(len(audio))
-                # print(len(wave_data))
-
-                del audio[0:self.block_length]
-
-                audio.extend(wave_data)
-
-                #print(len(audio))
-
-                audio = np.array(audio, dtype=int)
-
-            #print(audio_chunk_time,audio)
-
-            #thread_condition.notify(1)
-            thread_condition.release()
-            #print(f'9999999999: {int(round(time.time() * 1000))}')
-
-        stream.stop_stream()
-        stream.close()
-        p.terminate()'''
 
 class FilterThread(threading.Thread):
     def __init__(self):
@@ -958,11 +810,6 @@ class CustomFigCanvas(FigureCanvas, TimedAnimation):
         self.line1_head.set_data(self.n[-1 - margin], self.y[-1 - margin])
         self._drawn_artists = [self.line1, self.line1_tail, self.line1_head]
         return
-
-# You need to setup a signal slot mechanism, to
-# send data to your GUI in a thread-safe way.
-# Believe me, if you don't do this right, things
-# go very very wrong..
 class Communicate(QObject):
     data_signal = pyqtSignal(float)
 
@@ -1019,20 +866,7 @@ def dataSendLoop(addData_callbackFunc):
                 show_bool = False
                 for _ in range(200):
                     mySrc.data_signal.emit(y[_])  # <- Here you emit a signal!
-
-        '''  
-        else:
-
-            y = np.full(500,50)# + 25 * (np.sin(n / 8.3)) + 10 * (np.sin(n / 7.5)) - 5 * (np.sin(n / 1.5)))
-        for _ in range(50):
-            mySrc.data_signal.emit(y[_])  # <- Here you emit a signal!
-        if(i > 499):
-            i = 0
-        time.sleep(0.001)
-        #if
-        #mySrc.data_signal.emit(y[i]) # <- Here you emit a signal!
-        i += 1'''
-    ###
+                    
 class CustomMainWindow(QMainWindow):
     def __init__(self):
         super(CustomMainWindow, self).__init__()
